@@ -6,3 +6,8 @@ phases:
     commands:
       # Install dependencies needed for running tests
       - npm install
+    build:
+    commands:
+      - cd client
+      - npm run build
+      - cd..
