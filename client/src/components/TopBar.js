@@ -5,13 +5,12 @@ class TopBar extends Component {
     render() {
         return (
             <header className="App-header">
-                <span className="App-title">Sparking Laundry Management</span>
+                <span className="App-title">Sparkling Laundry Management</span>
 
                 {this.props.isLoggedIn ?
                     <a className="logout" onClick={this.props.handleLogout} >
                         <Icon type="logout"/>{' '}Logout
                     </a> : null }
-
             </header>
         );
     }

@@ -10,7 +10,7 @@ const helper = require('./helper');
 const app = express();
 const AdminUserName = 'admin';
 const AdminPassWord = '123456';
-let admin = require('./firebase-config');
+let { admin } = require('./firebase-config');
 const path = require('path');
 
 //swagger is used to auto generate API documentation
@@ -742,6 +742,41 @@ router.post('/reserveDryer', (req, res) => {
   });
 });
 
+/**
+ * @swagger
+ * /api/firebase/notification:
+ *   post:
+ *     description: send certain to the device based on token
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: registrationToken
+ *         description: device's registration token.
+ *         in: JSON
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: "msg send successfully"
+ */
+router.post('/firebase/notification', (req, res) => {
+  const registrationToken = req.body.registrationToken;
+  let message = {
+    notification: {
+      title: "mytitleeeee",
+      body: "myMessage from benjamin"
+    }
+  };
+  const options = notification_options;
+
+  admin.messaging().sendToDevice(registrationToken, message, options)
+    .then(response => {
+      return res.json({ isSuccess: true, msg: "Notification sent successfully" });
+    })
+    .catch(error => {
+      console.log(error);
+    });
+})
 
 setInterval(updateNonPickupMachineStatus, 60000);
 
@@ -782,48 +817,8 @@ const notification_options = {
   timeToLive: 60 * 60 * 24
 };
 
-
-
-
-/**
- * @swagger
- * /api/firebase/notification:
- *   post:
- *     description: send certain to the device based on token
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: registrationToken
- *         description: device's registration token.
- *         in: JSON
- *         required: true
- *         type: string
- *     responses:
- *       200:
- *         description: "msg send successfully"
- */
-router.post('/firebase/notification', (req, res) => {
-  const registrationToken = req.body.registrationToken;
-  //const message = req.body.message;
-
-  let message = {
-    notification: {
-      title: "mytitleeeee",
-      body: "myMessage from benjamin"
-    }
-  };
-  const options = notification_options;
-  admin.messaging().sendToDevice(registrationToken, message, options)
-    .then(response => {
-      return res.json({ isSuccess: true, msg: "Notification sent successfully" });
-    })
-    .catch(error => {
-      console.log(error);
-    });
-})
-
 app.use('/api', router);
-app.use(express.static(path.join(__dirname, 'client','build')))
+app.use(express.static(path.join(__dirname, 'client', 'build')))
 const API_PORT = process.env.port || 3001;
 app.listen(API_PORT, () => console.log(`LISTENING ON PORT ${API_PORT}`));
 module.exports = app;
