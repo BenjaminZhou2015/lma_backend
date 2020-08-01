@@ -434,6 +434,8 @@ router.post('/machines', (req, res) => {
   const addedMachine = new Machine({
     sn: req.body.sn,
     isAvailable: req.body.isAvailable,
+    isPickedUp:req.body.isPickedUp,
+    isReserved=req.body.isReserved,
     machineType: req.body.machineType,
     userID: req.body.userID,
     userReservedID: req.body.userReservedID,
@@ -474,6 +476,8 @@ router.put('/machines/:id', (req, res) => {
     {
       sn: req.body.sn,
       isAvailable: req.body.isAvailable,
+      isPickedUp:req.body.isPickedUp,
+      isReserved=req.body.isReserved,
       machineType: req.body.machineType,
       userID: req.body.userID,
       userReservedID: req.body.userReservedID,
