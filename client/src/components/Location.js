@@ -192,7 +192,7 @@ class Location extends Component {
 
     handleSave = item => {
         const {dataSource} = this.state;
-        fetch(`http://lmapp.us-east-2.elasticbeanstalk.com/api/locations/${item._id}`, {
+        fetch(`/api/locations/${item._id}`, {
             headers:{
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
@@ -222,7 +222,7 @@ class Location extends Component {
         //     dataSource: dataSource.filter(item => item._id !== _id),
         // });
 
-        fetch(`http://lmapp.us-east-2.elasticbeanstalk.com/api/locations/${_id}`, {
+        fetch(`/api/locations/${_id}`, {
             headers:{
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
@@ -262,7 +262,7 @@ class Location extends Component {
     };
 
     handleAdd = (newData) => {
-        fetch("http://lmapp.us-east-2.elasticbeanstalk.com/api/locations", {
+        fetch("/api/locations", {
             headers:{
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'

@@ -30,7 +30,7 @@ class Box extends Component{
                 return null;
             }
         )
-        res.map((dat))
+        //res.map((dat))
         const getRow=(data, element)=>{
             return <Row gutter={[16, 24]}>
                 {data.length <= 0
