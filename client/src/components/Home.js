@@ -23,7 +23,7 @@ class Home extends Component {
         const componentsSwitch = (key) => {
             switch (key) {
                 case 'Machine':
-                    return (<Machine data={data}/>);
+                    return (<Machine data={data} location={location}/>);
                 case 'User':
                     return (<User user={user}/>);
                 case 'Location':

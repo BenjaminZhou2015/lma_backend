@@ -431,6 +431,60 @@ router.put('/locations/:id', (req, res) => {
     });
 });
 
+router.post('/machines', (req, res) => {
+  const addedMachine = new Machine({
+    sn: req.body.sn,
+    isAvailable:true,
+    machineType:req.body.machineType,
+    userID:"",
+    userReservedID:"",
+    locationID:req.body.locationID,
+    scanString:""
+  });
+
+  addedMachine.save(function (err) {
+    if (err) {
+      res.json({ isSuccess: false, msg: err.message })
+    }
+    res.json({ isSuccess: true, msg: "" })
+  });
+});
+
+router.delete('/machines/:id', (req, res) => {
+  //console.log(req.params["id"]);
+  Location.findByIdAndDelete(req.params["id"], (err, doc) => {
+    //console.log(doc);
+    if (doc == null) {
+      return res.status(404).json({ isSuccess: false, msg: "Cannot find the Location" })
+    }
+    if (err) {
+      return res.status(500).json({ isSuccess: false, msg: err.message })
+    }
+    return res.status(201).json({ isSuccess: true, msg: "Location Deleted Successfully" })
+  });
+});
+
+router.put('/machines/:id', (req, res) => {
+  //console.log(req.params["id"]);
+  Location.findByIdAndUpdate(req.params["id"],
+      {
+        sn: req.body.sn,
+        isAvailable:true,
+        machineType:req.body.machineType,
+        userID:"",
+        userReservedID:"",
+        locationID:req.body.locationID,
+        scanString:""
+      }, (err, doc) => {
+        if (doc == null) {
+          return res.status(404).json({ isSuccess: false, msg: "Cannot find the Location" })
+        }
+        if (err) {
+          return res.status(500).json({ isSuccess: false, msg: err.message })
+        }
+        return res.status(201).json({ isSuccess: true, msg: "Location Updated Successfully" })
+      });
+});
 /**
  * /admin/login:
  *   post:
