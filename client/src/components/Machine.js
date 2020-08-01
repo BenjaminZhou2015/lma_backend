@@ -272,7 +272,7 @@ class Machine extends Component {
 
     handleSave = item => {
         const {dataSource} = this.state;
-        fetch(`http://lmapp.us-east-2.elasticbeanstalk.com/api/machines/${item._id}`, {
+        fetch(`/api/machines/${item._id}`, {
             headers:{
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
@@ -304,7 +304,7 @@ class Machine extends Component {
         //     dataSource: dataSource.filter(item => item._id !== _id),
         // });
 
-        fetch(`http://lmapp.us-east-2.elasticbeanstalk.com/api/machines/${_id}`, {
+        fetch(`/api/machines/${_id}`, {
             headers:{
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
@@ -346,7 +346,7 @@ class Machine extends Component {
     };
 
     handleAdd = (newData) => {
-        fetch("http://lmapp.us-east-2.elasticbeanstalk.com/api/machines", {
+        fetch("/api/machines", {
             headers:{
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
