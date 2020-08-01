@@ -82,12 +82,24 @@ router.get('/users', (req, res) => {
  *         description: "A successful response"
  */
 
-router.get('/machines', (req, res) => {
-  Machine.find((err, docs) => {
-    if (err) return res.json({ isSuccess: false, msg: "Get ERROR" });
-    return res.json({ isSuccess: true, machines: docs });
-  });
-});
+// router.get('/machines', (req, res) => {
+//   Machine.find((err, machines) => {
+//     if (err) return res.json({ isSuccess: false, msg: "Get ERROR" });
+    
+//     Location.find((err,locations)=>{
+//       machines.forEach(m=>{
+//           locations.forEach(l=>{
+//             new MachineModel={
+
+//             }
+//           })
+//       })
+     
+
+//     })
+//     return res.json({ isSuccess: true, machines: machines });
+//   });
+// });
 
 /**
  * @swagger
@@ -435,7 +447,7 @@ router.post('/machines', (req, res) => {
     sn: req.body.sn,
     isAvailable: req.body.isAvailable,
     isPickedUp:req.body.isPickedUp,
-    isReserved=req.body.isReserved,
+    isReserved:req.body.isReserved,
     machineType: req.body.machineType,
     userID: req.body.userID,
     userReservedID: req.body.userReservedID,
@@ -477,7 +489,7 @@ router.put('/machines/:id', (req, res) => {
       sn: req.body.sn,
       isAvailable: req.body.isAvailable,
       isPickedUp:req.body.isPickedUp,
-      isReserved=req.body.isReserved,
+      isReserved:req.body.isReserved,
       machineType: req.body.machineType,
       userID: req.body.userID,
       userReservedID: req.body.userReservedID,
