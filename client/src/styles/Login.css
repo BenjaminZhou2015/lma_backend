@@ -1,15 +1,14 @@
-.login-title{
+.login-title {
     margin-top: 150px;
     font-size: 30px;
     font-weight: bold;
 }
 
 .login-form {
-    width: 300px;
-    margin: 0 auto;
-
+    max-width: 350px;
 }
 
 .login-form-button {
-    width: 300px;
+    width: 350px;
+    max-width: 350px;
 }

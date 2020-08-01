@@ -434,10 +434,10 @@ router.put('/locations/:id', (req, res) => {
 router.post('/machines', (req, res) => {
   const addedMachine = new Machine({
     sn: req.body.sn,
-    isAvailable:true,
+    isAvailable: req.body.isAvailable,
     machineType:req.body.machineType,
-    userID:"",
-    userReservedID:"",
+    userID:req.body.userID,
+    userReservedID:req.body.userReservedID,
     locationID:req.body.locationID,
     scanString:""
   });
@@ -469,10 +469,10 @@ router.put('/machines/:id', (req, res) => {
   Location.findByIdAndUpdate(req.params["id"],
       {
         sn: req.body.sn,
-        isAvailable:true,
+        isAvailable: req.body.isAvailable,
         machineType:req.body.machineType,
-        userID:"",
-        userReservedID:"",
+        userID:req.body.userID,
+        userReservedID:req.body.userReservedID,
         locationID:req.body.locationID,
         scanString:""
       }, (err, doc) => {
