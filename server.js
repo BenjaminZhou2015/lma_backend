@@ -355,8 +355,6 @@ router.post('/location', (req, res) => {
 
 
 router.post('/locations', (req, res) => {
-  console.log(req.body.defaultRunningTime);
-
   const addedLocation = new Location({
     name: req.body.name,
     email: req.body.email,
@@ -435,17 +433,22 @@ router.put('/locations/:id', (req, res) => {
 router.post('/machines', (req, res) => {
   const addedMachine = new Machine({
     sn: req.body.sn,
-    isAvailable: true,
+    isAvailable: req.body.isAvailable,
     machineType: req.body.machineType,
-    userID: "",
-    userReservedID: "",
+    userID: req.body.userID,
+    userReservedID: req.body.userReservedID,
     locationID: req.body.locationID,
     scanString: ""
   });
 
-  addedMachine.save(function (err) {
+  addedMachine.save(function (err, machine) {
     if (err) {
       res.json({ isSuccess: false, msg: err.message })
+    }
+    else {
+      console.log(machine);
+      machine.scanString = Buffer.from(machine.id.toString()).toString('base64');
+      machine.save();
     }
     res.json({ isSuccess: true, msg: "" })
   });
@@ -470,12 +473,11 @@ router.put('/machines/:id', (req, res) => {
   Location.findByIdAndUpdate(req.params["id"],
     {
       sn: req.body.sn,
-      isAvailable: true,
+      isAvailable: req.body.isAvailable,
       machineType: req.body.machineType,
-      userID: "",
-      userReservedID: "",
-      locationID: req.body.locationID,
-      scanString: ""
+      userID: req.body.userID,
+      userReservedID: req.body.userReservedID,
+      locationID: req.body.locationID
     }, (err, doc) => {
       if (doc == null) {
         return res.status(404).json({ isSuccess: false, msg: "Cannot find the Location" })
@@ -541,7 +543,7 @@ router.post('/admin/login', (req, res) => {
  *       200:
  *         description: ""
  */
-//scantoclose
+
 router.post('/scanToOpen', (req, res) => {
   let email = Buffer.from(req.body.token, 'base64').toString('ascii');
   User.find({ email: email }, (err, docs) => {
@@ -636,7 +638,6 @@ router.post('/scanToClose', (req, res) => {
               if (err) {
                 return res.json({ isSuccess: false, msg: "Get ERROR" });
               }
-              console.log(reservedUser);
               notifyDevice(reservedUser.token)
             })
           }
@@ -902,10 +903,31 @@ function updateNonPickupMachineStatus() {
   })
 }
 
-// Machine.updateMany({}, { startTime: Date.UTC(1970, 0, 1), isReserved: false, isAvailable: true, isPickedUp: true, userReservedID: "", userID: "" }, { multi: true }, function (err, raw) {
+// Machine.updateMany({}, { startTime: Date.UTC(1970, 0, 1), isReserved: false, isAvailable: true, isPickedUp: true, userReservedID: "", userID: "",scanString:"" }, { multi: true }, function (err, raw) {
 //   if (err) return handleError(err);
 //   console.log('The raw response from Mongo was ', raw);
 // });
+// let scanString = Buffer.from("5f0def8a01d9ba5b48985744").toString('base64');
+// Machine.find(function (err, docs) {
+//   if (err) {
+//     console.log(err);
+//   }
+//   else {
+//     docs.forEach(m => {
+//       let s = Buffer.from(m.id.toString()).toString('base64');
+//       m.scanString = s;
+//       m.save();
+//     })
+//     // m.scanString = Buffer.from(m._id).toString('base64');
+//     // m.save();
+
+
+//   }
+
+// })
+// let scanString = Buffer.from("5f21cad83c5e723a404343c6").toString('base64');
+// let scanString = Buffer.from("5f21cad83c5e723a404343c7").toString('base64');
+// let scanString = Buffer.from("5f21cad83c5e723a404343c8").toString('base64');
 
 app.use('/api', router);
 app.use(express.static(path.join(__dirname, 'client', 'build')))
