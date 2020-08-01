@@ -6,6 +6,7 @@ import { Table,  Button, Popconfirm} from 'antd';
 import {Form} from 'antd4'
 
 const { Option } = Select;
+
 const EditableCell = ({
                           editing,
                           dataIndex,
@@ -14,9 +15,43 @@ const EditableCell = ({
                           record,
                           index,
                           children,
+                          res,
+                          locationName,
                           ...restProps
                       }) => {
-    const inputNode = inputType === 'number' ? <InputNumber /> : <Input />;
+
+    const inputNode = dataIndex === "machineType" || dataIndex === "isAvailable" || dataIndex == "locationID" ?
+        <Select defaultValue={dataIndex === "machineType"?record.machineType: dataIndex==="locationID"?record.locationName:record.isAvailable?"true":"false"} style={{width: 120}}
+                                                           onChange={(value, record)=>{
+                                                               dataIndex === "machineType"?record.machineType =value:
+                                                                   dataIndex === "locationID" ? record.locationID=(value)=>
+                                                                   {
+                                                                       for(let i =1; i< res.length; i++){
+                                                                           if(value=== locationName[i]){
+                                                                               return res[i];
+                                                                           }
+                                                                       }
+
+
+                                                                   }:record.isAvailable =value;
+
+                                                           }}>
+
+            <Option value={dataIndex === "machineType"?"washer":dataIndex === "isAvailable"?"true":"Sunlight Apartments"}>{dataIndex === "machineType"?"washer":dataIndex === "isAvailable"?"true":"Sunlight Apartments"}</Option>
+            <Option value={dataIndex === "machineType"?"dryer":dataIndex ==="isAvailable"?"false" :"East Side Living"}>{dataIndex === "machineType"?"dryer":dataIndex ==="isAvailable"?"false" :"East Side Living" }</Option>
+            <Option value={dataIndex === "machineType"?null:dataIndex ==="isAvailable"?null:"Town Place Walkups"}>{dataIndex === "machineType"?null:dataIndex ==="isAvailable"?null:"Town Place Walkups"}</Option>
+            {
+              locationName.map((loc)=>{
+                if(dataIndex === "locationID" && (loc === "Sunlight Apartments" || loc === "East Side Living" || loc === "Town Place Walkups" )){
+                    return null;
+                }else{
+                    return <Option value = {loc}> {loc + ""}</Option>
+                }
+
+            })}
+        </Select>:
+        inputType === 'number' ? <InputNumber /> :  <Input />
+       ;
     return (
         <td {...restProps}>
             {editing ? (
@@ -40,30 +75,6 @@ const EditableCell = ({
         </td>
     );
 };
-/*sn: {
-    type: String,
-        required: true
-},
-isAvailable: Boolean,
-    isReserved: {
-    type: Boolean,
-default: false
-},
-//for machine which is not picked up by user who use it
-//related function:updateNonPickupMachineStatus
-isPickedUp: {
-    type: Boolean,
-default: true
-},
-machineType: String, // washer, dryer
-    startTime: {
-    type: Date,
-default: Date.UTC(1970, 0, 1)
-},
-userID: String,
-    userReservedID: String,
-    locationID: String,
-    scanString: String  //base64(id)*/
 
 function handleChange(value) {
     console.log(`selected ${value}`);
@@ -82,7 +93,8 @@ class Machine extends Component {
 
         };
         const formRef = React.createRef();
-
+        const {locationIDs} = this.props;
+        const {locationNames} = this.props;
         this.columns = [
             {
                 title: 'SN',
@@ -96,51 +108,15 @@ class Machine extends Component {
                 dataIndex: 'isAvailable',
                 key: 'isAvailable',
                 editable: true,
-
+                render:val=>(val?"true":"false")
             },
             {
                 title: 'MachineType',
                 dataIndex: 'machineType',
                 key: 'machineType',
                 editable: true,
-                render: (_, record) => {
 
-                    /*const editable = this.isEditing(record);
-                    return editable ? (
-                        <span>
-                        <a
-                            onClick={() => this.save(record._id)}
-                            style={{
-                                marginRight: 8,
-                            }}
-                        >
-                          Save
-                        </a>
-                        <Popconfirm title="Sure to cancel?" onConfirm={this.cancel}>
-                          <a>Cancel</a>
-                        </Popconfirm>
-                        </span>
-                    ) : (
-                        <a disabled={this.state.editingKey !== ''} onClick={() => this.edit(record)}>
-                            Edit
-                        </a>
-                    );*/
-                    const editable = this.isEditing(record);
-                    const {machine} = this.state;
-                    return editable ?
-                        (<Select defaultValue={record.machineType} style={{width: 120}}
-                                 onChange={(value, record)=>{
-                                     record.machineType =value;
 
-                                 }}>
-                            <Option value="washer" >washer</Option>
-                            <Option value="dryer" >dryer</Option>
-                        </Select>):
-                        (<Select defaultValue={record.machineType} style={{width: 120}} onChange={handleChange}>
-
-                        </Select>)
-
-                },
 
             },
             {
@@ -148,6 +124,15 @@ class Machine extends Component {
                 dataIndex: 'locationID',
                 key: 'locationID',
                 editable: true,
+                render:val=> {
+                    console.log(locationNames);
+                    console.log(locationIDs);
+                    for (let i = 0; i < locationNames.length; i++) {
+                        if(locationIDs[i] === val){
+                            return locationNames[i]+"";
+                        }
+                    }
+                }
             },
             {
                 title: 'UserID',
@@ -213,7 +198,7 @@ class Machine extends Component {
         this.formRef.current.setFieldsValue({
             sn: '',
             isAvailable: '',
-            machineType: machine,
+            machineType: '',
             locationID: '',
             userID:'',
             userReservedID:'',
@@ -381,6 +366,35 @@ class Machine extends Component {
     render() {
         const { data ,location} = this.props;
         const { dataSource } = this.state;
+        console.log(dataSource);
+        let res =[];
+        let index =[];
+        let locationName =[];
+        var checkres = (item)=>{
+            for(const ele of res){
+                if(item === ele){
+                    return true;
+                }
+            }
+            return false;
+        }
+        data.map((dat) => {
+                if(!checkres(dat.locationID)) {
+                    res.push(dat.locationID);
+                    index.push(res.length-1);
+                }
+                return null;
+            }
+        )
+        res.map((ele)=>{
+            for(let temp of location){
+                if(temp._id.toString() === ele){
+                    locationName.push(temp.name);
+                    break;
+                }
+            }
+            return null;
+        });
 
         const mergedColumns = this.columns.map(col => {
             if (!col.editable) {
@@ -394,6 +408,8 @@ class Machine extends Component {
                     dataIndex: col.dataIndex,
                     title: col.title,
                     editing: this.isEditing(record),
+                    res,
+                    locationName
                 }),
             };
         });
@@ -420,9 +436,7 @@ class Machine extends Component {
                             dataSource={dataSource}
                             columns={mergedColumns}
                             rowClassName="editable-row"
-                            pagination={{
-                                onChange: this.cancel,
-                            }}
+                            pagination={{ pageSize: 50  }}
                         />
                     </Form>
                 </div>

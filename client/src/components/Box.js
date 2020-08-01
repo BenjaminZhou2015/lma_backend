@@ -30,7 +30,16 @@ class Box extends Component{
                 return null;
             }
         )
-        res.map((dat))
+
+        res.map((ele)=>{
+            for(let temp of location){
+                if(temp._id.toString() === ele){
+                    locationName.push(temp.name);
+                    break;
+                }
+            }
+            return null;
+        });
         const getRow=(data, element)=>{
             return <Row gutter={[16, 24]}>
                 {data.length <= 0
@@ -70,7 +79,7 @@ class Box extends Component{
                     {index.map((ele)=>(
                         <div>
                             <Divider orientation="middle" style={{ color: '#333', fontWeight: 'normal',fontSize:30, height:50,justifyContent: 'center', alignItems: 'center'}}>
-                                {"location:"+ele}
+                                {"location:"+locationName[ele]}
                             </Divider>
                             {getRow(data,ele)}
                         </div>

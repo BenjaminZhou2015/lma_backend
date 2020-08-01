@@ -19,11 +19,48 @@ class Home extends Component {
     render() {
         const { data, user, location } = this.props;
         const { current } = this.state;
-        //console.log(location)
+        let res =[];
+        let index =[];
+        let locationName =[];
+        var checkres = (item)=>{
+            for(const ele of res){
+                if(item === ele){
+                    return true;
+                }
+            }
+            return false;
+        }
+        data.map((dat) => {
+                if(!checkres(dat.locationID)) {
+                    res.push(dat.locationID);
+                    index.push(res.length-1);
+                }
+                return null;
+            }
+        )
+        res.map((ele)=>{
+            for(let temp of location){
+                if(temp._id.toString() === ele){
+                    locationName.push(temp.name);
+                    break;
+                }
+            }
+            return null;
+        });
+
+        data.map((dat)=>{
+           for(let i =0; i<res.length; i++){
+               if(dat.locationID == res[i]){
+                   dat["locationName"] = locationName[i];
+                   break;
+               }
+           }
+        });
+        console.log(data);
         const componentsSwitch = (key) => {
             switch (key) {
                 case 'Machine':
-                    return (<Machine data={data} location={location}/>);
+                    return (<Machine data={data} location={location} locationIDs={res} locationNames={locationName}/>);
                 case 'User':
                     return (<User user={user}/>);
                 case 'Location':
