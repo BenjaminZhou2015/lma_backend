@@ -82,24 +82,40 @@ router.get('/users', (req, res) => {
  *         description: "A successful response"
  */
 
-// router.get('/machines', (req, res) => {
-//   Machine.find((err, machines) => {
-//     if (err) return res.json({ isSuccess: false, msg: "Get ERROR" });
-    
-//     Location.find((err,locations)=>{
-//       machines.forEach(m=>{
-//           locations.forEach(l=>{
-//             new MachineModel={
+router.get('/machines', (req, res) => {
+  Machine.find((err, machines) => {
+    if (err) return res.json({ isSuccess: false, msg: "Get ERROR" });
+    var machineModels = [];
+    Location.find((err, locations) => {
+      machines.forEach(m => {
+        locations.forEach(l => {
+          if (l.id.toString() == m.locationID) {
+            var machineModel = {
+              _id: m._id.toString(),
+              sn: m.sn,
+              isAvailable: m.isAvailable,
+              isReserved: m.isReserved,
+              isPickedUp: m.isPickedUp,
+              machineType: m.machineType,
+              startTime: m.startTime,
+              userID: m.userID,
+              userReservedID: m.userReservedID,
+              locationID: m.locationID,
+              locationName: l.name,
+              scanString: m.scanString
+            }
+            machineModels.push(machineModel);
+          }
+        })
+      }
+      )
+      return res.json({ isSuccess: true, machines: machineModels });
+    })
 
-//             }
-//           })
-//       })
-     
 
-//     })
-//     return res.json({ isSuccess: true, machines: machines });
-//   });
-// });
+
+  });
+});
 
 /**
  * @swagger
@@ -446,8 +462,8 @@ router.post('/machines', (req, res) => {
   const addedMachine = new Machine({
     sn: req.body.sn,
     isAvailable: req.body.isAvailable,
-    isPickedUp:req.body.isPickedUp,
-    isReserved:req.body.isReserved,
+    isPickedUp: req.body.isPickedUp,
+    isReserved: req.body.isReserved,
     machineType: req.body.machineType,
     userID: req.body.userID,
     userReservedID: req.body.userReservedID,
@@ -488,8 +504,8 @@ router.put('/machines/:id', (req, res) => {
     {
       sn: req.body.sn,
       isAvailable: req.body.isAvailable,
-      isPickedUp:req.body.isPickedUp,
-      isReserved:req.body.isReserved,
+      isPickedUp: req.body.isPickedUp,
+      isReserved: req.body.isReserved,
       machineType: req.body.machineType,
       userID: req.body.userID,
       userReservedID: req.body.userReservedID,
