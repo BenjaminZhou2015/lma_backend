@@ -3,6 +3,8 @@ import 'antd/dist/antd.css';
 import { Table,  Button, Popconfirm, Input, InputNumber} from 'antd';
 import {Form} from 'antd4'
 
+const Virtual_ID = "VirtualID"
+
 const EditableCell = ({
                           editing,
                           dataIndex,
@@ -91,7 +93,7 @@ class Location extends Component {
                 render: (text, record) => (
                     this.state.dataSource.length >= 1 ? (
                         <Popconfirm title="Sure to delete?" onConfirm={() => this.handleDelete(record._id)}>
-                            <a>Delete</a>
+                            <a disabled={this.state.editingKey === Virtual_ID} >Delete</a>
                         </Popconfirm>
                     ) : null
 
@@ -112,9 +114,9 @@ class Location extends Component {
                     >
                       Save
                     </a>
-                    <Popconfirm title="Sure to cancel?" onConfirm={this.cancel}>
-                      <a>Cancel</a>
-                    </Popconfirm>
+
+                    <a onClick={() => this.cancel()}>Cancel</a>
+
                     </span>
                     ) : (
                         <a disabled={this.state.editingKey !== ''} onClick={() => this.edit(record)}>
@@ -150,7 +152,9 @@ class Location extends Component {
 
 
     cancel = () => {
+        const {dataSource} = this.state;
         this.setState({
+            dataSource: dataSource.filter(item => item._id !== Virtual_ID),
             editingKey : ''
         });
     };
@@ -165,7 +169,7 @@ class Location extends Component {
                 const item = newData[index];
                 newData.splice(index, 1, { ...item, ...row });
 
-                if(key === "VirtualID"){
+                if(key === Virtual_ID){
                     this.handleAdd(newData[index]);
                 } else{
                     this.handleSave(newData[index]);
@@ -247,7 +251,7 @@ class Location extends Component {
             defaultRunningTime: "",
             defaultReservationExpireTime: "",
             defaultPickupTime: "",
-            _id : "VirtualID"
+            _id : Virtual_ID
         };
 
         this.setState({
