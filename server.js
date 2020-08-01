@@ -390,7 +390,6 @@ router.post('/locations', (req, res) => {
     defaultReservationExpireTime: req.body.defaultReservationExpireTime,
     defaultPickupTime: req.body.defaultPickupTime,
   });
-  console.log(addedLocation);
 
   addedLocation.save(function (err) {
     if (err) {
@@ -473,14 +472,14 @@ router.post('/machines', (req, res) => {
 
   addedMachine.save(function (err, machine) {
     if (err) {
-      res.json({ isSuccess: false, msg: err.message })
+      return res.json({ isSuccess: false, msg: err.message })
     }
     else {
       console.log(machine);
       machine.scanString = Buffer.from(machine.id.toString()).toString('base64');
       machine.save();
+      return res.json({ isSuccess: true, msg: "" });
     }
-    res.json({ isSuccess: true, msg: "" })
   });
 });
 
@@ -656,7 +655,6 @@ router.post('/scanToClose', (req, res) => {
         if (!machine.isAvailable) {
           isSuccess = true;
           msg = "machine has stopped";
-
           //release machine
           machine.isAvailable = true;
           machine.startTime = Date.UTC(1970, 0, 1);
@@ -934,33 +932,6 @@ function updateNonPickupMachineStatus() {
     });
   })
 }
-
-// Machine.updateMany({}, { startTime: Date.UTC(1970, 0, 1), isReserved: false, isAvailable: true, isPickedUp: true, userReservedID: "", userID: "",scanString:"" }, { multi: true }, function (err, raw) {
-//   if (err) return handleError(err);
-//   console.log('The raw response from Mongo was ', raw);
-// });
-// let scanString = Buffer.from("5f0def8a01d9ba5b48985744").toString('base64');
-// Machine.find(function (err, docs) {
-//   if (err) {
-//     console.log(err);
-//   }
-//   else {
-//     docs.forEach(m => {
-//       let s = Buffer.from(m.id.toString()).toString('base64');
-//       m.scanString = s;
-//       m.save();
-//     })
-//     // m.scanString = Buffer.from(m._id).toString('base64');
-//     // m.save();
-
-
-//   }
-
-// })
-// let scanString = Buffer.from("5f21cad83c5e723a404343c6").toString('base64');
-// let scanString = Buffer.from("5f21cad83c5e723a404343c7").toString('base64');
-// let scanString = Buffer.from("5f21cad83c5e723a404343c8").toString('base64');
-
 app.use('/api', router);
 app.use(express.static(path.join(__dirname, 'client', 'build')))
 const API_PORT = process.env.port || 3001;

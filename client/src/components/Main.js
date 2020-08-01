@@ -24,7 +24,7 @@ class Main extends Component {
                     <Route path="/home" render={this.getMachine}/>
                     <Route render={this.getLogin}/>
                 </Switch>
-                <p className="footnote">Sparkling Laundry Management, Mailing Address: admin@foxmail.com, LMA 2020 Project</p>
+                <p className="footnote">81Sparkling Laundry Management, Mailing Address: admin@foxmail.com, LMA 2020 Project</p>
             </div>
         );
     }

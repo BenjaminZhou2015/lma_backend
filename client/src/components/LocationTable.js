@@ -1,11 +1,9 @@
-import React, {useState,Component} from 'react';
-import Box from './Box';
-import List from './List';
-import {Input, InputNumber, Menu,Select} from "antd";
-import { Table,  Button, Popconfirm} from 'antd';
-import {Form} from 'antd4'
+import React, { Component } from 'react';
+import 'antd/dist/antd.css';
+import { Table,  Button, Popconfirm, Input, InputNumber, Form } from 'antd';
+import request from "umi-request";
+import { API_ROOT } from '../constants';
 
-const { Option } = Select;
 const EditableCell = ({
                           editing,
                           dataIndex,
@@ -40,132 +38,53 @@ const EditableCell = ({
         </td>
     );
 };
-/*sn: {
-    type: String,
-        required: true
-},
-isAvailable: Boolean,
-    isReserved: {
-    type: Boolean,
-default: false
-},
-//for machine which is not picked up by user who use it
-//related function:updateNonPickupMachineStatus
-isPickedUp: {
-    type: Boolean,
-default: true
-},
-machineType: String, // washer, dryer
-    startTime: {
-    type: Date,
-default: Date.UTC(1970, 0, 1)
-},
-userID: String,
-    userReservedID: String,
-    locationID: String,
-    scanString: String  //base64(id)*/
 
-function handleChange(value) {
-    console.log(`selected ${value}`);
-}
-
-class Machine extends Component {
-
+class LocationTable extends Component {
     formRef = React.createRef();
     constructor(props) {
         super(props);
         this.state= {
-            dataSource : this.props.data,
-            count: this.props.data.length,
-            editingKey: '',
-            machine:''
-
+            dataSource : [],
+            count: 0,
+            editingKey: ''
         };
         const formRef = React.createRef();
 
         this.columns = [
             {
-                title: 'SN',
-                dataIndex: 'sn',
-                key: 'sn',
+                title: 'Name',
+                dataIndex: 'name',
+                key: 'name',
                 editable: true,
 
             },
             {
-                title: 'IsAvailable',
-                dataIndex: 'isAvailable',
-                key: 'isAvailable',
+                title: 'Email',
+                dataIndex: 'email',
+                key: 'email',
                 editable: true,
 
             },
             {
-                title: 'MachineType',
-                dataIndex: 'machineType',
-                key: 'machineType',
+                title: 'DefaultRunningTime',
+                dataIndex: 'defaultRunningTime',
+                key: 'defaultRunningTime',
                 editable: true,
-                render: (_, record) => {
 
-                    /*const editable = this.isEditing(record);
-                    return editable ? (
-                        <span>
-                        <a
-                            onClick={() => this.save(record._id)}
-                            style={{
-                                marginRight: 8,
-                            }}
-                        >
-                          Save
-                        </a>
-                        <Popconfirm title="Sure to cancel?" onConfirm={this.cancel}>
-                          <a>Cancel</a>
-                        </Popconfirm>
-                        </span>
-                    ) : (
-                        <a disabled={this.state.editingKey !== ''} onClick={() => this.edit(record)}>
-                            Edit
-                        </a>
-                    );*/
-                    const editable = this.isEditing(record);
-                    const {machine} = this.state;
-                    return editable ?
-                        (<Select defaultValue={record.machineType} style={{width: 120}}
-                                 onChange={(value, record)=>{
-                                     record.machineType =value;
-
-                                 }}>
-                            <Option value="washer" >washer</Option>
-                            <Option value="dryer" >dryer</Option>
-                        </Select>):
-                        (<Select defaultValue={record.machineType} style={{width: 120}} onChange={handleChange}>
-
-                        </Select>)
-
-                },
 
             },
             {
-                title: 'LocationID',
-                dataIndex: 'locationID',
-                key: 'locationID',
+                title: 'DefaultReservationExpireTime',
+                dataIndex: 'defaultReservationExpireTime',
+                key: 'defaultReservationExpireTime',
                 editable: true,
             },
             {
-                title: 'UserID',
-                dataIndex: 'userID',
-                key: 'userID',
+                title: 'DefaultPickupTime',
+                dataIndex: 'defaultPickupTime',
+                key: 'defaultPickupTime',
                 editable: true,
-            },
-            {
-                title: 'UserReservedID',
-                dataIndex: 'userReservedID',
-                key: 'userReservedID',
-                editable: true,
-            },
-            {
-                title: 'ScanString',
-                dataIndex: 'scanString',
-                key: 'scanString',
-                editable: true,
+
             },
             {
                 title: "",
@@ -208,16 +127,14 @@ class Machine extends Component {
 
         ];
     }
+
     edit = record => {
-        const {machine} = this.state;
         this.formRef.current.setFieldsValue({
-            sn: '',
-            isAvailable: '',
-            machineType: machine,
-            locationID: '',
-            userID:'',
-            userReservedID:'',
-            scanString:'',
+            name: '',
+            email: '',
+            defaultRunningTime: '',
+            defaultReservationExpireTime: '',
+            defaultPickupTime: '',
             ...record,
         });
 
@@ -234,9 +151,20 @@ class Machine extends Component {
 
 
     cancel = () => {
-        this.setState({
-            editingKey : ''
-        });
+        const { dataSource } = this.state;
+        const last = dataSource.pop();
+        if (last._id === "VirtualID") {
+            this.setState({
+                editingKey: '',
+                dataSource: [...dataSource],
+                count: this.state.count - 1,
+            });
+        } else {
+            dataSource.push(last);
+            this.setState({
+                editingKey: '',
+            });
+        }
     };
 
     save = async key => {
@@ -272,20 +200,18 @@ class Machine extends Component {
 
     handleSave = item => {
         const {dataSource} = this.state;
-        fetch(`http://lmapp.us-east-2.elasticbeanstalk.com/api/machines/${item._id}`, {
+        fetch(`http://lmapp.us-east-2.elasticbeanstalk.com/api/locations/${item._id}`, {
             headers:{
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
             method: 'PUT',
             body: JSON.stringify({
-                sn: item.sn,
-                isAvailable: item.isAvailable,
-                machineType: item.machineType,
-                locationID:item.locationID,
-                userID:item.userID,
-                userReservedID:item.userReservedID,
-                scanString:item.scanString,
+                name: item.name,
+                email: item.email,
+                defaultRunningTime: item.defaultRunningTime,
+                defaultReservationExpireTime: item.defaultReservationExpireTime,
+                defaultPickupTime: item.defaultPickupTime,
             }),
         })
             .then((response) => {
@@ -304,7 +230,7 @@ class Machine extends Component {
         //     dataSource: dataSource.filter(item => item._id !== _id),
         // });
 
-        fetch(`http://lmapp.us-east-2.elasticbeanstalk.com/api/machines/${_id}`, {
+        fetch(`http://lmapp.us-east-2.elasticbeanstalk.com/api/locations/${_id}`, {
             headers:{
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
@@ -328,13 +254,11 @@ class Machine extends Component {
         const {count, dataSource} = this.state;
 
         const newData = {
-            sn: '',
-            isAvailable: '',
-            machineType: '',
-            locationID: '',
-            userID:'',
-            userReservedID:'',
-            scanString:'',
+            name:"",
+            email:"",
+            defaultRunningTime: "",
+            defaultReservationExpireTime: "",
+            defaultPickupTime: "",
             _id : "VirtualID"
         };
 
@@ -346,20 +270,18 @@ class Machine extends Component {
     };
 
     handleAdd = (newData) => {
-        fetch("http://lmapp.us-east-2.elasticbeanstalk.com/api/machines", {
+        fetch("http://lmapp.us-east-2.elasticbeanstalk.com/api/locations", {
             headers:{
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
             method: 'POST',
             body: JSON.stringify({
-                sn: newData.sn,
-                isAvailable: newData.isAvailable,
-                machineType: newData.machineType,
-                locationID: newData.locationID,
-                userID:newData.userID,
-                userReservedID:newData.userReservedID,
-                scanString:newData.scanString,
+                name: newData.name,
+                email: newData.email,
+                defaultRunningTime: newData.defaultRunningTime,
+                defaultReservationExpireTime: newData.defaultReservationExpireTime,
+                defaultPickupTime: newData.defaultPickupTime,
             }),
         })
             .then((response) => {
@@ -375,11 +297,20 @@ class Machine extends Component {
             .catch((err) => console.log(err))
     }
 
-
+    componentDidMount() {
+        request(`${API_ROOT}/locations`).then(
+            response => {
+                const { locations } = response;
+                this.setState({
+                    dataSource: locations,
+                    count: locations.length
+                })
+            }
+        )
+    }
 
 
     render() {
-        const { data ,location} = this.props;
         const { dataSource } = this.state;
 
         const mergedColumns = this.columns.map(col => {
@@ -390,47 +321,46 @@ class Machine extends Component {
                 ...col,
                 onCell: record => ({
                     record,
-                    inputType: 'text',
+                    inputType: col.dataIndex === 'name' || col.dataIndex ==='email' ? 'text' : 'number',
                     dataIndex: col.dataIndex,
                     title: col.title,
                     editing: this.isEditing(record),
                 }),
             };
         });
+
         return (
-            <>
-                <div>
-                    <Button disabled={this.state.editingKey !== ''} onClick={this.onAdd}
-                            type="primary"
-                            style={{
-                                marginTop:16,
-                                marginBottom: 16
-                            }}>
-                        Add a New Location
-                    </Button>
-                    <Form ref={this.formRef} component={false}>
-                        <Table
-                            components={{
-                                body: {
-                                    cell: EditableCell,
-                                },
-                            }}
-                            bordered
-                            rowKey = "_id"
-                            dataSource={dataSource}
-                            columns={mergedColumns}
-                            rowClassName="editable-row"
-                            pagination={{
-                                onChange: this.cancel,
-                            }}
-                        />
-                    </Form>
-                </div>
-                <List data={data}/>
-                <Box data={data} location={location}/>
-            </>
+            <div>
+                <Button disabled={this.state.editingKey !== ''} onClick={this.onAdd}
+                        type="primary"
+                        style={{
+                            marginTop:16,
+                            marginBottom: 16
+                        }}>
+                    Add a New Location
+                </Button>
+                <Form ref={this.formRef} component={false}>
+                    <Table
+                        components={{
+                            body: {
+                                cell: EditableCell,
+                            },
+                        }}
+                        bordered
+                        rowKey = "_id"
+                        dataSource={this.state.dataSource}
+                        columns={mergedColumns}
+                        rowClassName="editable-row"
+                        pagination={{
+                            onChange: this.cancel,
+                        }}
+                    />
+                </Form>
+            </div>
+
         );
-    }
+    };
+
 }
 
-export default Machine;
+export default LocationTable;

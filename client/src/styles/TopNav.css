@@ -1,0 +1,25 @@
+.App-header {
+    background-color:#3d85c6;;
+    color: white;
+    height: 50px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 2px 0 rgba(12,13,14,0.15);
+}
+
+.logo img {
+    max-height: 50px;
+    max-width: 50px;
+}
+
+.App-title {
+    position: absolute;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.logout {
+    font-weight: bold;
+}
