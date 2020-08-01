@@ -887,7 +887,7 @@ function updateNonPickupMachineStatus() {
       console.log(err);
       return;
     }
-    
+
     locations.forEach(location => {
       location.machines.filter(a => !a.isAvailable).forEach(machine => {
         let estimateTime = location.defaultRunningTime - helper.millisToMinutes(Date.now() - machine.startTime) + location.defaultPickupTime;
@@ -902,6 +902,10 @@ function updateNonPickupMachineStatus() {
   })
 }
 
+// Machine.updateMany({}, { startTime: Date.UTC(1970, 0, 1), isReserved: false, isAvailable: true, isPickedUp: true, userReservedID: "", userID: "" }, { multi: true }, function (err, raw) {
+//   if (err) return handleError(err);
+//   console.log('The raw response from Mongo was ', raw);
+// });
 
 app.use('/api', router);
 app.use(express.static(path.join(__dirname, 'client', 'build')))
