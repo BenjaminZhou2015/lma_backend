@@ -13,7 +13,11 @@ var UserSchema = mongoose.Schema({
         type: Date,
         default: new Date()
     },
-    locationID: String
+    locationID: String,
+    token:{
+        type: String,
+        default: ""
+    },
 })
 UserSchema.set('versionKey', false)
 

@@ -16,6 +16,7 @@ const path = require('path');
 //swagger is used to auto generate API documentation
 const swaggerUi = require('swagger-ui-express');
 const swaggerJSDoc = require('swagger-jsdoc');
+const { cwd } = require('process');
 
 //Extended: https://swagger.io/specification/#infoObject
 const definition = {
@@ -434,12 +435,12 @@ router.put('/locations/:id', (req, res) => {
 router.post('/machines', (req, res) => {
   const addedMachine = new Machine({
     sn: req.body.sn,
-    isAvailable:true,
-    machineType:req.body.machineType,
-    userID:"",
-    userReservedID:"",
-    locationID:req.body.locationID,
-    scanString:""
+    isAvailable: true,
+    machineType: req.body.machineType,
+    userID: "",
+    userReservedID: "",
+    locationID: req.body.locationID,
+    scanString: ""
   });
 
   addedMachine.save(function (err) {
@@ -467,23 +468,23 @@ router.delete('/machines/:id', (req, res) => {
 router.put('/machines/:id', (req, res) => {
   //console.log(req.params["id"]);
   Location.findByIdAndUpdate(req.params["id"],
-      {
-        sn: req.body.sn,
-        isAvailable:true,
-        machineType:req.body.machineType,
-        userID:"",
-        userReservedID:"",
-        locationID:req.body.locationID,
-        scanString:""
-      }, (err, doc) => {
-        if (doc == null) {
-          return res.status(404).json({ isSuccess: false, msg: "Cannot find the Location" })
-        }
-        if (err) {
-          return res.status(500).json({ isSuccess: false, msg: err.message })
-        }
-        return res.status(201).json({ isSuccess: true, msg: "Location Updated Successfully" })
-      });
+    {
+      sn: req.body.sn,
+      isAvailable: true,
+      machineType: req.body.machineType,
+      userID: "",
+      userReservedID: "",
+      locationID: req.body.locationID,
+      scanString: ""
+    }, (err, doc) => {
+      if (doc == null) {
+        return res.status(404).json({ isSuccess: false, msg: "Cannot find the Location" })
+      }
+      if (err) {
+        return res.status(500).json({ isSuccess: false, msg: err.message })
+      }
+      return res.status(201).json({ isSuccess: true, msg: "Location Updated Successfully" })
+    });
 });
 /**
  * /admin/login:
@@ -628,6 +629,17 @@ router.post('/scanToClose', (req, res) => {
           machine.userID = "";
           machine.isPickedUp = true;
           machine.save();
+
+          //let the one who has reserved this machine get notified
+          if (machine.userReservedID) {
+            User.findById(userReservedID, (err, reservedUser) => {
+              if (err) {
+                return res.json({ isSuccess: false, msg: "Get ERROR" });
+              }
+              console.log(reservedUser);
+              notifyDevice(reservedUser.token)
+            })
+          }
         }
         else {
           isSuccess = false;
@@ -643,8 +655,27 @@ router.post('/scanToClose', (req, res) => {
   })
 });
 
+function notifyDevice(registrationToken) {
+  const options = {
+    priority: "high",
+    timeToLive: 60 * 60 * 24
+  };
 
+  let message = {
+    notification: {
+      title: "Your reserved machine can be used now",
+      body: "You have reserved a unit of machine. Now it's clear. Go for it!"
+    }
+  };
 
+  admin.messaging().sendToDevice(registrationToken, message, options)
+    .then(response => {
+      return res.json({ isSuccess: true, msg: "Notification sent successfully" });
+    })
+    .catch(error => {
+      console.log(error);
+    });
+}
 
 /**
  * @swagger
@@ -755,8 +786,6 @@ router.post('/reserveDryer', (req, res) => {
           }
           else {
             //If there is available dryer, user don't need to wait and can use them right now.
-
-
             Machine.exists({ machineType: "dryer", isAvailable: true, locationID: location.id }, function (err, exist) {
               if (err) {
                 return res.json({ isSuccess: false, msg: "Get ERROR" });
@@ -800,7 +829,7 @@ router.post('/reserveDryer', (req, res) => {
  * @swagger
  * /api/firebase/notification:
  *   post:
- *     description: send certain to the device based on token
+ *     description: send usertoekn and registrationToken to server
  *     produces:
  *       - application/json
  *     parameters:
@@ -809,28 +838,35 @@ router.post('/reserveDryer', (req, res) => {
  *         in: JSON
  *         required: true
  *         type: string
+ *       - name: userToken
+ *         description: user's token.
+ *         in: JSON
+ *         required: true
+ *         type: string
  *     responses:
  *       200:
  *         description: "msg send successfully"
  */
 router.post('/firebase/notification', (req, res) => {
-  const registrationToken = req.body.registrationToken;
-  let message = {
-    notification: {
-      title: "mytitleeeee",
-      body: "myMessage from benjamin"
+  let userToken = req.body.token;
+  let registrationToken = req.body.registrationToken;
+  let email = Buffer.from(userToken, 'base64').toString('ascii');
+  User.findOne({ email: email }, function (err, user) {
+    if (err) {
+      return res.json({ isSuccess: false, msg: "Get ERROR" });
     }
-  };
-  const options = notification_options;
-
-  admin.messaging().sendToDevice(registrationToken, message, options)
-    .then(response => {
-      return res.json({ isSuccess: true, msg: "Notification sent successfully" });
-    })
-    .catch(error => {
-      console.log(error);
-    });
-})
+    else {
+      console.log(user);
+      user.token = registrationToken;
+      user.save(function (err) {
+        if (err) {
+          return res.json({ isSuccess: false, msg: err.message })
+        }
+        return res.json({ isSuccess: true, msg: "token sent successfully" });
+      });
+    }
+  })
+});
 
 setInterval(updateNonPickupMachineStatus, 60000);
 
@@ -851,7 +887,7 @@ function updateNonPickupMachineStatus() {
       console.log(err);
       return;
     }
-
+    
     locations.forEach(location => {
       location.machines.filter(a => !a.isAvailable).forEach(machine => {
         let estimateTime = location.defaultRunningTime - helper.millisToMinutes(Date.now() - machine.startTime) + location.defaultPickupTime;
@@ -866,10 +902,6 @@ function updateNonPickupMachineStatus() {
   })
 }
 
-const notification_options = {
-  priority: "high",
-  timeToLive: 60 * 60 * 24
-};
 
 app.use('/api', router);
 app.use(express.static(path.join(__dirname, 'client', 'build')))
