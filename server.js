@@ -802,7 +802,7 @@ const notification_options = {
  *       200:
  *         description: "msg send successfully"
  */
-app.post('/firebase/notification', (req, res) => {
+router.post('/firebase/notification', (req, res) => {
   const registrationToken = req.body.registrationToken;
   //const message = req.body.message;
 
