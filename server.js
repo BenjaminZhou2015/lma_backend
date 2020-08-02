@@ -484,22 +484,24 @@ router.post('/machines', (req, res) => {
 });
 
 router.delete('/machines/:id', (req, res) => {
-  //console.log(req.params["id"]);
-  Location.findByIdAndDelete(req.params["id"], (err, doc) => {
+  console.log(req.params["id"]);
+  Machine.findByIdAndDelete(req.params["id"], (err, doc) => {
     //console.log(doc);
+    console.log(doc);
+    
     if (doc == null) {
-      return res.status(404).json({ isSuccess: false, msg: "Cannot find the Location" })
+      return res.status(404).json({ isSuccess: false, msg: "Cannot find the machine" })
     }
     if (err) {
       return res.status(500).json({ isSuccess: false, msg: err.message })
     }
-    return res.status(201).json({ isSuccess: true, msg: "Location Deleted Successfully" })
+    return res.status(201).json({ isSuccess: true, msg: "machine Deleted Successfully" })
   });
 });
 
 router.put('/machines/:id', (req, res) => {
-  //console.log(req.params["id"]);
-  Location.findByIdAndUpdate(req.params["id"],
+  console.log(req.params["id"]);
+  Machine.findByIdAndUpdate(req.params["id"],
     {
       sn: req.body.sn,
       isAvailable: req.body.isAvailable,
@@ -511,12 +513,12 @@ router.put('/machines/:id', (req, res) => {
       locationID: req.body.locationID
     }, (err, doc) => {
       if (doc == null) {
-        return res.status(404).json({ isSuccess: false, msg: "Cannot find the Location" })
+        return res.status(404).json({ isSuccess: false, msg: "Cannot find the Machine" })
       }
       if (err) {
         return res.status(500).json({ isSuccess: false, msg: err.message })
       }
-      return res.status(201).json({ isSuccess: true, msg: "Location Updated Successfully" })
+      return res.status(201).json({ isSuccess: true, msg: "Machine Updated Successfully" })
     });
 });
 /**
