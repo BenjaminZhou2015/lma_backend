@@ -663,10 +663,10 @@ router.post('/scanToClose', (req, res) => {
           machine.userID = "";
           machine.isPickedUp = true;
           machine.save();
-
           //let the one who has reserved this machine get notified
           if (machine.userReservedID) {
-            User.findById(userReservedID, (err, reservedUser) => {
+            User.findById(machine.userReservedID, (err, reservedUser) => {
+              console.log(reservedUser);
               if (err) {
                 return res.json({ isSuccess: false, msg: "Get ERROR" });
               }
@@ -893,7 +893,7 @@ router.post('/firebase/notification', (req, res) => {
       user.token = registrationToken;
       user.save(function (err) {
         if (err) {
-          return res.json({ isSuccess: false, msg: err.message })
+          return res.json({ isSuccess: false, msg: "Get ERROR" })
         }
         return res.json({ isSuccess: true, msg: "token sent successfully" });
       });
