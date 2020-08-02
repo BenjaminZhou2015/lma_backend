@@ -42,7 +42,7 @@ const EditableCell = ({
             <Option value={dataIndex === "machineType"?null:dataIndex ==="isAvailable"?null:"Town Place Walkups"}>{dataIndex === "machineType"?null:dataIndex ==="isAvailable"?null:"Town Place Walkups"}</Option>
             {
               locationName.map((loc)=>{
-                if(dataIndex === "locationID" && (loc === "Sunlight Apartments" || loc === "East Side Living" || loc === "Town Place Walkups" )){
+                if(dataIndex === "isAvailable" || dataIndex ==="machineType" || (loc === "Sunlight Apartments" || loc === "East Side Living" || loc === "Town Place Walkups" )){
                     return null;
                 }else{
                     return <Option value = {loc}> {loc + ""}</Option>
