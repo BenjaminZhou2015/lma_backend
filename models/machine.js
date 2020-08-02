@@ -22,9 +22,18 @@ const MachineSchema = mongoose.Schema({
         type: Date,
         default: Date.UTC(1970, 0, 1)
     },
-    userID: String,
-    userReservedID: String,
-    locationID: String,
+    userID:  {
+        type: String,
+        default: ""
+    },
+    userReservedID: {
+        type: String,
+        default: ""
+    },
+    locationID: {
+        type: String,
+        default: ""
+    },
     scanString: String  //base64(id)
 });
 MachineSchema.set('versionKey', false)

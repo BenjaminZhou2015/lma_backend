@@ -8,11 +8,12 @@ import {useForm} from "antd/es/form/Form";
 const { Option } = Select;
 
 const MachineList = () => {
-    const [ data, setData ] = useState();
+    const [ data, setData ] = useState([]);
     const [ visible, setV ] = useState(false);
     const [ machine, setMachine ] = useState({});
     const [ users, setUsers ] = useState([]);
     const [ locations, setLocations ] = useState([]);
+    const [ notify, refresh ] = useState(0);
     const [ form ] = useForm();
     useEffect(() => {
         request(`${API_ROOT}/users`)
@@ -31,14 +32,11 @@ const MachineList = () => {
             )
     }, []);
     useEffect(() => {
-        request(`${API_ROOT}/machines`)
-            .then(
-                response => {
-                    const { machines } = response;
-                    setData(machines);
-                }
-            )
-    }, [visible, users, locations]);
+        (async () => {
+            const { machines } = await request(`${API_ROOT}/machines`);
+            setData([...machines.reverse()]);
+        })();
+    }, [notify]);
     useEffect(() => {
         form.resetFields();
     }, [machine]);
@@ -50,11 +48,11 @@ const MachineList = () => {
             editable: true,
         },
         {
-            title: 'LocationID',
-            dataIndex: 'locationID',
-            key: 'locationID',
+            title: 'Location Name',
+            dataIndex: 'locationName',
+            key: 'locationName',
             editable: true,
-
+            sorter:(a,b)=>a.locationName.localeCompare(b.locationName)
         },
         {
             title: 'Start time',
@@ -91,18 +89,6 @@ const MachineList = () => {
             editable: true,
         },
         {
-            title: 'Using by',
-            dataIndex: 'userID',
-            key: 'userID',
-            editable: true,
-        },
-        {
-            title: 'Reserved by',
-            dataIndex: 'userReservedID',
-            key: 'userReservedID',
-            editable: true,
-        },
-        {
             title: "Actions",
             key: "op",
             render: (_, record) => {
@@ -120,7 +106,8 @@ const MachineList = () => {
                                     notification.success({
                                         message: response.msg,
                                         description: "Deleted"
-                                    })
+                                    });
+                                    refresh(notify + 1);
                                 }
                             ).catch(
                                 err => {
@@ -197,7 +184,8 @@ const MachineList = () => {
                                     notification.success({
                                         message: response.msg,
                                         description: "Updated"
-                                    })
+                                    });
+                                    refresh(notify + 1);
                                 }
                             );
                         } else {
@@ -206,7 +194,11 @@ const MachineList = () => {
                                 data: {
                                     ...values
                                 }
-                            });
+                            }).then(
+                                response => {
+                                    refresh(notify + 1);
+                                }
+                            );
                         }
                         setMachine({});
                         setV(false);
@@ -226,7 +218,7 @@ const MachineList = () => {
                             <Form.Item
                                 required
                                 label="Type"
-                                name="type"
+                                name="machineType"
                             >
                                 <Radio.Group >
                                     <Radio value="washer">washer</Radio>
@@ -274,22 +266,6 @@ const MachineList = () => {
                     >
                         <Select>
                             {locations.map(location => <Option key={location._id} value={location._id}>{location.name}</Option>)}
-                        </Select>
-                    </Form.Item>
-                    <Form.Item
-                        label="Using by"
-                        name="userID"
-                    >
-                        <Select>
-                            {users.map(user => <Option key={user._id} value={user._id}>{user.email}</Option>)}
-                        </Select>
-                    </Form.Item>
-                    <Form.Item
-                        label="Reserved by"
-                        name="userReservedID"
-                    >
-                        <Select>
-                            {users.map(user => <Option key={user._id} value={user._id}>{user.email}</Option>)}
                         </Select>
                     </Form.Item>
                 </Form>
